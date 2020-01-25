@@ -53,10 +53,10 @@
 (defun tike-jira-account-create (domain port username password alias)
   "Create an account for use with Jira's API."
 
-  (setq tike-jira--account               (aem--account-create :username username
-                                                              :domain   domain
-                                                              :port     port
-                                                              :alias    alias))
+  (setq tike-jira--account               (tike-jira--account-create :username username
+                                                                    :domain   domain
+                                                                    :port     port
+                                                                    :alias    alias))
 
   (setq url-http-real-basic-auth-storage (cons
                                            (list
