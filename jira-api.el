@@ -72,21 +72,25 @@
       ('xml                           (xml-parse-region))
       (otherwise                         (buffer-string)))))
 
-(defun tike-jira--request (reqMeth finalDomain headers data responseType async-p)
+(defun tike-jira-api---request (reqMeth finalDomain queryParams
+                                headers data        responseType async-p)
   "Puts together the various elements needed to make various HTTP calls
 using the `url.el' package."
 
-  (let ((url-request-method                                      reqMeth)
-        (url-request-extra-headers                               headers)
-        (url-request-data          (tike-jira--generate-query-args data)))
+  (let ((url-request-method                                                     reqMeth)
+        (url-request-extra-headers                                              headers)
+        (url-request-data                    (tike-jira-api---generate-query-args data))
+        (fd                        (concat
+                                     finalDomain
+                                     "?"
+                                     (tike-jira-api---generate-query-args queryParams))))
     (if async-p
-        (url-retrieve finalDomain `(lambda (status)
-                                     (funcall ,async-p (aem--process
-                                                         (current-buffer)
-                                                         ,finalDomain
-                                                         ',responseType))))
-      (aem--process (url-retrieve-synchronously
-                      finalDomain)               finalDomain responseType))))
+        (url-retrieve fd `(lambda (status)
+                            (funcall ,async-p (tike-jira-api---process
+                                                (current-buffer)
+                                                ,fd
+                                                ',responseType))))
+      (tike-jira-api---process (url-retrieve-synchronously fd) fd responseType))))
 
 
 
