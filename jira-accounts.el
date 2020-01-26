@@ -35,25 +35,25 @@
 
 
   ; Account Struct.
-(cl-defstruct (tike-jira--account (:constructor tike-jira--account-create)
-                                  (:conc-name   tike-jira--account-get-))
+(cl-defstruct (tike-jira--account (:constructor tike-jira-account--create)
+                                  (:conc-name   tike-jira-account--get-))
   (username "admin") (domain "http://localhost")
   (port      "4502") (alias  "localhost_author"))
 
-(defun tike-jira--account-get-uri (account)
+(defun tike-jira-account--get-uri (account)
   "Create a proper form for a URI from the domain and port of an account."
 
   (concat
-    (tike-jira--account-get-domain account)
+    (tike-jira-account--get-domain account)
     ":"
-    (tike-jira--account-get-port   account)))
+    (tike-jira-account--get-port   account)))
 
 
   ; User tools to handle Accounts
 (defun tike-jira-account-create (domain port username password alias)
   "Create an account for use with Jira's API."
 
-  (setq tike-jira--account               (tike-jira--account-create :username username
+  (setq tike-jira--account               (tike-jira-account--create :username username
                                                                     :domain   domain
                                                                     :port     port
                                                                     :alias    alias))

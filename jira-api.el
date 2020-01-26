@@ -30,15 +30,15 @@
 (require 'url)
 
 
-(defconst tike--REQUEST_GET    "GET"
+(defconst tike-jira-api--REQUEST_GET    "GET"
   "String constant for Tikè to represent choosing a GET HTTP request.")
-(defconst tike--REQUEST_PUT    "PUT"
+(defconst tike-jira-api--REQUEST_PUT    "PUT"
   "String constant for Tikè to represent choosing a PUT HTTP request.")
-(defconst tike--REQUEST_POST   "POST"
+(defconst tike-jira-api--REQUEST_POST   "POST"
   "String constant for Tikè to represent choosing a POST HTTP request.")
-(defconst tike--REQUEST_PATCH  "PATCH"
+(defconst tike-jira-api--REQUEST_PATCH  "PATCH"
   "String constant for Tikè to represent choosing a PATCH HTTP request.")
-(defconst tike--REQUEST_DELETE "DELETE"
+(defconst tike-jira-api--REQUEST_DELETE "DELETE"
   "String constant for Tikè to represent choosing a DELETE HTTP request.")
 
 
@@ -51,7 +51,7 @@
 
 
 ;; Functions Related to Making HTTP Calls
-(defun tike-jira--generate-query-args (args)
+(defun tike-jira-api---generate-query-args (args)
   "Converts ARGS, a list of pairs, to a string of \"key1=val1&key2=val2\"."
 
   (mapconcat '(lambda (p)
@@ -60,7 +60,7 @@
                   "="
                   (url-hexify-string (format "%s" (cdr p))))) args "&"))
 
-(defun tike-jira--process (buffer url type)
+(defun tike-jira-api---process (buffer url type)
   "Handles and parses the returned string from a call to `url-retrieve' or
 `url-retrieve-synchronously'."
 
