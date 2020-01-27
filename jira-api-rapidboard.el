@@ -28,7 +28,6 @@
 
 ;;; Code:
 (require 'cl)
-(require 'tike-jira-api-error)
 (require 'tike-utils)
 
 (cl-deftype tike-jira--rapidboard-type ()
@@ -39,14 +38,27 @@
                                      (:conc-name   tike-jira-rapidboard--get-))
   (id nil) (self nil) (name nil) (type nil))
 
-(defun tike-jira-rapidboard-create (json)
-  "Create a Jira Agile Rapidboard object from a JSON object (as Elisp)."
+(tike-jira-object-create rapidboard
+  (tike-jira-rapidboard--create :id   (cdr-assoc 'id   obj)
+                                :self (cdr-assoc 'self obj)
+                                :name (cdr-assoc 'name obj)
+                                :type (cdr-assoc 'type obj)))
 
-  (tike-jira-error-check json (lambda (obj)
-                                (tike-jira-rapidboard--create :id   (cdr-assoc 'id   json)
-                                                              :self (cdr-assoc 'self json)
-                                                              :name (cdr-assoc 'name json)
-                                                              :type (cdr-assoc 'type json)))))
+
+(cl-defstruct (tike-jira--rapidboard-config (:constructor tike-jira-rapidboard-config--create)
+                                            (:conc-name   tike-jira-rapidboard-config--get-))
+  (id     nil) (self          nil) (name       nil) (type    nil)
+  (filter nil) (column-config nil) (estimation nil) (ranking nil))
+
+(tike-jira-object-create rapidboard-config
+  (tike-jira-rapidboard-config--create :id            (cdr-assoc 'id           obj)
+                                       :self          (cdr-assoc 'self         obj)
+                                       :name          (cdr-assoc 'name         obj)
+                                       :type          (cdr-assoc 'type         obj)
+                                       :filter        (cdr-assoc 'filter       obj)
+                                       :column-config (cdr-assoc 'columnConfig obj)
+                                       :estimation    (cdr-assoc 'estimation   obj)
+                                       :ranking       (cdr-assoc 'ranking      obj)))
 
 (provide 'tike-jira-api-rapidboard)
 
