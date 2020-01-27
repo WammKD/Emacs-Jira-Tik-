@@ -28,6 +28,7 @@
 
 ;;; Code:
 (require 'cl)
+(require 'tike-jira-api-error)
 (require 'tike-utils)
 
 (cl-deftype tike-jira--rapidboard-type ()
@@ -41,10 +42,11 @@
 (defun tike-jira-rapidboard-create (json)
   "Create a Jira Agile Rapidboard object from a JSON object (as Elisp)."
 
-  (tike-jira-rapidboard--create :id   (cdr-assoc 'id   json)
-                                :self (cdr-assoc 'self json)
-                                :name (cdr-assoc 'name json)
-                                :type (cdr-assoc 'type json)))
+  (tike-jira-error-check json (lambda (obj)
+                                (tike-jira-rapidboard--create :id   (cdr-assoc 'id   json)
+                                                              :self (cdr-assoc 'self json)
+                                                              :name (cdr-assoc 'name json)
+                                                              :type (cdr-assoc 'type json)))))
 
 (provide 'tike-jira-api-rapidboard)
 
