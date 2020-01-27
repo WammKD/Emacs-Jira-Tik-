@@ -1157,17 +1157,18 @@ using the `url.el' package."
 
 (defun tike-jira-api--rapidboards-get (account id &optional callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat
-      (tike-jira-account--get-uri account)
-      "/rest/agile/1.0/board/"
-      (if (numberp id) (number-to-string id) id))
-    '()
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-rapidboard-create
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat
+        (tike-jira-account--get-uri account)
+        "/rest/agile/1.0/board/"
+        (if (numberp id) (number-to-string id) id))
+      '()
+      '()
+      '()
+      'json
+      callback)))
 
 (defun tike-jira-api--rapidboards-get-backlog (account id &optional startAt maxResults
                                                                     jql     validateQuery
