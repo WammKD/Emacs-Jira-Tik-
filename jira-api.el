@@ -420,6 +420,23 @@ using the `url.el' package."
 
 
 
+;; Filters
+(defun tike-jira-api--filters-get (account id &optional expand callback)
+  ""
+  (tike-jira-filter-create (tike-jira-api---request
+                             tike-jira-api--REQUEST_GET
+                             (concat
+                               (tike-jira-account--get-uri account)
+                               "/rest/api/2/filter/"
+                               (if (numberp id) (number-to-string id) id))
+                             (if expand `((expand . ,expand)) '())
+                             '()
+                             '()
+                             'json
+                             callback)))
+
+
+
 ;; Issues
 (defun tike-jira-api--issues-create (account issue &optional updateHistory callback)
   ""
@@ -1174,21 +1191,30 @@ using the `url.el' package."
                                                                     jql     validateQuery
                                                                     fields  expand        callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/backlog")
-    (append
-      (if jql    `((jql    . ,jql))    '())
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '())
-      `((validateQuery . ,(if validateQuery validateQuery "true"))
-        (maxResults    . ,(or maxResults 20))
-        (startAt       . ,(or startAt     0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/backlog")
+      (append
+        (if jql    `((jql    . ,jql))    '())
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '())
+        `((validateQuery . ,(if validateQuery validateQuery "true"))
+          (maxResults    . ,(or maxResults 20))
+          (startAt       . ,(or startAt     0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-issue-create
+                                             (cdr-assoc 'issues   obj))))))
 
 (defun tike-jira-api--rapidboards-get-configuration (account id &optional callback)
   ""
