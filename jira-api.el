@@ -27,6 +27,7 @@
 
 ;;; Code:
 (require 'json)
+(require 'tike-utils)
 (require 'url)
 
 
@@ -40,14 +41,6 @@
   "String constant for Tikè to represent choosing a PATCH HTTP request.")
 (defconst tike-jira-api--REQUEST_DELETE "DELETE"
   "String constant for Tikè to represent choosing a DELETE HTTP request.")
-
-
-;; Utility
-(defun cdr-assoc (key assoc-list)
-  "A simple utility function to run (cdr (assoc KEY ASSOC-LIST))."
-
-  (cdr (assoc key assoc-list)))
-
 
 
 ;; Functions Related to Making HTTP Calls
