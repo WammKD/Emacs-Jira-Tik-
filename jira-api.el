@@ -26,7 +26,10 @@
 ;; 
 
 ;;; Code:
+(require 'cl)
 (require 'json)
+(require 'tike-jira-api-page)
+(require 'tike-jira-api-rapidboard)
 (require 'tike-utils)
 (require 'url)
 
@@ -1131,20 +1134,26 @@ using the `url.el' package."
 (defun tike-jira-api--rapidboards-all (account &optional startAt maxResults
                                                          type    name       callback)
   ""
-  (if (and type (not (member type '("scrum" "kanban"))))
+  (if (and type (not (cl-typep type 'tike-jira--rapidboard-type)))
       (error "In `tike-jira-api--rapidboards-all', provided "
              "TYPE was not \"scrum\" or \"kanban\"")
-    (tike-jira-api---request
-      tike-jira-api--REQUEST_GET
-      (concat (tike-jira-account--get-uri account) "/rest/agile/1.0/board")
-      (append
-        (if name `((name . ,name)) '())
-        (if type `((type . ,type)) '())
-        `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
-      '()
-      '()
-      'json
-      callback)))
+    (let ((obj (tike-jira-api---request
+                 tike-jira-api--REQUEST_GET
+                 (concat (tike-jira-account--get-uri account) "/rest/agile/1.0/board")
+                 (append
+                   (if name `((name . ,name)) '())
+                   (if type `((type . ,type)) '())
+                   `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
+                 '()
+                 '()
+                 'json
+                 callback)))
+      (tike-jira-page--create
+        :max-results (cdr-assoc 'maxResults obj)
+        :start-at    (cdr-assoc 'startAt    obj)
+        :total       (cdr-assoc 'total      obj)
+        :is-last     (cdr-assoc 'isLast     obj)
+        :values      (mapcar 'tike-jira-rapidboard-create (cdr-assoc 'values obj))))))
 
 (defun tike-jira-api--rapidboards-get (account id &optional callback)
   ""
