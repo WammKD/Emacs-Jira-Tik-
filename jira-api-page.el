@@ -28,7 +28,8 @@
 ;;; Code:
 (cl-defstruct (tike-jira--page (:constructor tike-jira-page--create)
                                (:conc-name   tike-jira-page--get-))
-  (max-results nil) (start-at nil) (total nil) (is-last nil) (values nil))
+  (expand nil) (max-results nil) (start-at nil)
+  (total  nil) (is-last     nil) (values   nil))
 
 (provide 'tike-jira-api-page)
 
