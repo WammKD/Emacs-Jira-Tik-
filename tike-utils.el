@@ -48,13 +48,15 @@ Example:
                                 :name (cdr-assoc 'name obj)
                                 :type (cdr-assoc 'type obj)))"
 
+  (declare (indent 1))
+
   `(defun ,(intern (concat "tike-jira-" (symbol-name objectName) "-create")) (json)
      ,(concat
         "Create a Jira "
         (capitalize (symbol-name objectName))
         " object from a JSON object (as Elisp).")
 
-     (tike-jira-error-check json (lambda (obj) ,body))))
+     (tike-jira-error-check json (lambda (obj) (if obj ,body nil)))))
 
 (provide 'tike-utils)
 
