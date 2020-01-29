@@ -1218,35 +1218,45 @@ using the `url.el' package."
 
 (defun tike-jira-api--rapidboards-get-configuration (account id &optional callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/configuration")
-    '()
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-rapidboard-config-create
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/configuration")
+      '()
+      '()
+      '()
+      'json
+      callback)))
 
 (defun tike-jira-api--rapidboards-get-issues (account id &optional startAt maxResults
                                                                    jql     validateQuery
                                                                    fields  expand        callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/issue")
-    (append
-      (if jql    `((jql    . ,jql))    '())
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '())
-      `((validateQuery . ,(if validateQuery validateQuery "true"))
-        (maxResults    . ,(or maxResults 20))
-        (startAt       . ,(or startAt     0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/issue")
+      (append
+        (if jql    `((jql    . ,jql))    '())
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '())
+        `((validateQuery . ,(if validateQuery validateQuery "true"))
+          (maxResults    . ,(or maxResults 20))
+          (startAt       . ,(or startAt     0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-issue-create
+                                             (cdr-assoc 'issues   obj))))))
 
   ; (Rapid)Board Epics
 (defun tike-jira-api--rapidboards--epics-get (account id &optional startAt maxResults
@@ -1525,3 +1535,7 @@ using the `url.el' package."
     ;;              "PR-3"]  }
     'json
     callback))
+
+(provide 'tike-jira-api)
+
+;;; jira-api.el ends here
