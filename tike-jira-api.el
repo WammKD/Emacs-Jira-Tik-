@@ -28,6 +28,7 @@
 ;;; Code:
 (require 'cl)
 (require 'json)
+(require 'tike-jira-api-issue)
 (require 'tike-jira-api-page)
 (require 'tike-jira-api-rapidboard)
 (require 'tike-utils)
