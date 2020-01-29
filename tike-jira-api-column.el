@@ -26,7 +26,7 @@
 ;; 
 
 ;;; Code:
-(require 'el)
+(require 'cl)
 (require 'tike-utils)
 
 (cl-deftype tike-jira--column-config--constraint-type ()
