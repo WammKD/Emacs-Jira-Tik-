@@ -1,4 +1,4 @@
-;;; jira-accounts.el --- functions for interfacing with Jira's API
+;;; tike-jira-accounts.el --- functions for interfacing with Jira's API
 ;; Copyright (C) 2019
 
 ;; Author: Jonathan Schmeling <jaft.r@outlook.com>
@@ -70,6 +70,6 @@
                                                  (concat username ":" password))))
                                            url-http-real-basic-auth-storage)))
 
-(provide 'jira-accounts)
+(provide 'tike-jira-accounts)
 
-;;; jira-accounts.el ends here
+;;; tike-jira-accounts.el ends here
