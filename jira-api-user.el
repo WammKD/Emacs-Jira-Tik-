@@ -26,6 +26,8 @@
 ;; 
 
 ;;; Code:
+(require 'tike-jira-api-avatar-urls)
+(require 'tike-jira-api-group)
 (require 'tike-utils)
 
 (cl-defstruct (tike-jira--user (:constructor tike-jira-user--create)
@@ -35,18 +37,34 @@
   (locale      nil) (groups       nil) (application-roles nil) (expand        nil))
 
 (tike-jira-object-create user
-  (tike-jira-user--create :self              (cdr-assoc 'self              obj)
-                          :key               (cdr-assoc 'key               obj)
-                          :name              (cdr-assoc 'name              obj)
-                          :email-address     (cdr-assoc 'email-address     obj)
-                          :avatar-urls       (cdr-assoc 'avatar-urls       obj)
-                          :display-name      (cdr-assoc 'display-name      obj)
-                          :active            (cdr-assoc 'active            obj)
-                          :time-zone         (cdr-assoc 'time-zone         obj)
-                          :locale            (cdr-assoc 'locale            obj)
-                          :groups            (cdr-assoc 'groups            obj)
-                          :application-roles (cdr-assoc 'application-roles obj)
-                          :expand            (cdr-assoc 'expand            obj)))
+  (tike-jira-user--create :self              (cdr-assoc 'self                obj)
+                          :key               (cdr-assoc 'key                 obj)
+                          :name              (cdr-assoc 'name                obj)
+                          :email-address     (cdr-assoc 'emailAddress        obj)
+                          :avatar-urls       (tike-jira-avatar-urls-create
+                                               (cdr-assoc 'avatarUrls        obj))
+                          :display-name      (cdr-assoc 'display-name        obj)
+                          :active            (cdr-assoc 'active              obj)
+                          :time-zone         (cdr-assoc 'time-zone           obj)
+                          :locale            (cdr-assoc 'locale              obj)
+                          :groups            (tike-jira-simple-list-wrapper-create
+                                               (cdr-assoc 'groups            obj))
+                          :application-roles (tike-jira-simple-list-wrapper-create
+                                               (cdr-assoc 'application-roles obj))
+                          :expand            (cdr-assoc 'expand              obj)))
+
+
+(cl-defstruct (tike-jira--watchers (:constructor tike-jira-watchers--create)
+                                   (:conc-name   tike-jira-watchers--get-))
+  (self nil) (is-watching nil) (watch-count nil) (watchers nil))
+
+(tike-jira-object-create watchers
+  (tike-jira-watchers--create :self        (cdr-assoc 'self       obj)
+                              :is-watching (cdr-assoc 'isWatching obj)
+                              :watch-count (cdr-assoc 'watchCount obj)
+                              :watchers    (mapcar
+                                             'tike-jira-user-create
+                                             (cdr-assoc 'watchers obj))))
 
 (provide 'tike-jira-api-user)
 

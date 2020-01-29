@@ -42,7 +42,7 @@
     :self                     (cdr-assoc 'self                     obj)
     :key                      (cdr-assoc 'key                      obj)
     :expand                   (cdr-assoc 'expand                   obj)
-    :fields                   (cdr-assoc 'expand                   obj)
+    :fields                   (cdr-assoc 'fields                   obj)
     :renderedFields           (cdr-assoc 'renderedFields           obj)
     :properties               (cdr-assoc 'properties               obj)
     :names                    (cdr-assoc 'names                    obj)

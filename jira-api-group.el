@@ -36,6 +36,18 @@
   (tike-jira-group--create :id   (cdr-assoc 'id   obj)
                            :self (cdr-assoc 'self obj)))
 
+
+(cl-defstruct (tike-jira--simple-list-wrapper (:constructor tike-jira-simple-list-wrapper--create)
+                                              (:conc-name   tike-jira-simple-list-wrapper--get-))
+  (size nil) (max-results nil) (items nil))
+
+(tike-jira-object-create simple-list-wrapper
+  (tike-jira-simple-list-wrapper--create :size        (cdr-assoc 'size        obj)
+                                         :max-results (cdr-assoc 'max-results obj)
+                                         :items       (mapcar
+                                                        'tike-jira-group-create
+                                                        (cdr-assoc 'items     obj))))
+
 (provide 'tike-jira-api-group)
 
 ;;; jira-api-group.el ends here

@@ -28,11 +28,12 @@
 
 ;;; Code:
 (require 'cl)
+(require 'tike-jira-api-column)
+(require 'tike-jira-api-group)
 (require 'tike-utils)
 
 (cl-deftype tike-jira--rapidboard-type ()
   '(member scrum "scrum" kanban "kanban"))
-
 
 (cl-defstruct (tike-jira--rapidboard (:constructor tike-jira-rapidboard--create)
                                      (:conc-name   tike-jira-rapidboard--get-))
@@ -51,15 +52,43 @@
   (filter nil) (column-config nil) (estimation nil) (ranking nil))
 
 (tike-jira-object-create rapidboard-config
-  (tike-jira-rapidboard-config--create :id            (cdr-assoc 'id           obj)
-                                       :self          (cdr-assoc 'self         obj)
-                                       :name          (cdr-assoc 'name         obj)
-                                       :type          (cdr-assoc 'type         obj)
-                                       :filter        (cdr-assoc 'filter       obj)
-                                       :column-config (cdr-assoc 'columnConfig obj)
-                                       :estimation    (cdr-assoc 'estimation   obj)
-                                       :ranking       (cdr-assoc 'ranking      obj)))
+  (tike-jira-rapidboard-config--create :id              (cdr-assoc 'id           obj)
+                                       :self            (cdr-assoc 'self         obj)
+                                       :name            (cdr-assoc 'name         obj)
+                                       :type            (cdr-assoc 'type         obj)
+                                       :filter        (tike-jira-group-create
+                                                        (cdr-assoc 'filter       obj))
+                                       :column-config (tike-jira-column-config-create
+                                                        (cdr-assoc 'columnConfig obj))
+                                       :estimation    (tike-jira-rapidboard-estimation-create
+                                                        (cdr-assoc 'estimation   obj))
+                                       :ranking         (cdr-assoc 'ranking      obj)))
+
+
+(cl-deftype tike-jira--rapidboard-estimation-type ()
+  '(member none "none" issueCount "issueCount" field "field"))
+
+(cl-defstruct (tike-jira--rapidboard-estimation (:constructor tike-jira-rapidboard-estimation--create)
+                                                (:conc-name   tike-jira-rapidboard-estimation--get-))
+  (type nil) (field nil))
+
+(tike-jira-object-create rapidboard-estimation
+  (tike-jira-rapidboard-estimation--create :type  (cdr-assoc 'type obj)
+                                           :field (when (string-equal
+                                                          "field"
+                                                          (cdr-assoc 'type obj))
+                                                    (tike-jira-rapidboard-estimation-field-create
+                                                      (cdr-assoc 'field obj)))))
+
+
+(cl-defstruct (tike-jira--rapidboard-estimation-field (:constructor tike-jira-rapidboard-estimation-field--create)
+                                                      (:conc-name   tike-jira-rapidboard-estimation-field--get-))
+  (field-id nil) (display-name nil))
+
+(tike-jira-object-create rapidboard-estimation-field
+  (tike-jira-rapidboard-estimation-field--create :field-id     (cdr-assoc 'fieldId     obj)
+                                                 :display-name (cdr-assoc 'displayName obj)))
 
 (provide 'tike-jira-api-rapidboard)
 
-;;; jira-api-page.el ends here
+;;; jira-api-rapidboard.el ends here

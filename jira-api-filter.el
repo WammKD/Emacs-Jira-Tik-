@@ -41,7 +41,7 @@
                             :owner         (cdr-assoc 'owner         obj)
                             :view-url      (cdr-assoc 'view-url      obj)
                             :search-url    (cdr-assoc 'search-url    obj)
-                            :favorite      (cdr-assoc 'favorite      obj)
+                            :favorite      (cdr-assoc 'favourite     obj)
                             :shared-users  (cdr-assoc 'shared-users  obj)
                             :subscriptions (cdr-assoc 'subscriptions obj)
                             :editable      (cdr-assoc 'editable      obj)))
