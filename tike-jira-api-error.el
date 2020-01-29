@@ -27,7 +27,6 @@
 
 ;;; Code:
 (require 'subr-x)
-(require 'tike-utils)
 
 (cl-defstruct (tike-jira--error (:constructor tike-jira-error--create)
                                 (:conc-name   tike-jira-error--get-))
@@ -36,9 +35,9 @@
 (defun tike-jira-error-check (json processor)
   ""
 
-  (if-let ((errMsgs (cdr-assoc 'errorMessages json)))
+  (if-let ((errMsgs (cdr (assoc 'errorMessages json))))
       (tike-jira-error--create :error-messages errMsgs
-                               :errors         (cdr-assoc 'errors json))
+                               :errors         (cdr (assoc 'errors json)))
     (funcall processor json)))
 
 (provide 'tike-jira-api-error)
