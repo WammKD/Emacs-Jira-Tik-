@@ -28,12 +28,17 @@
 
 ;;; Code:
 (require 'cl)
+(require 'tike-jira-api-attachment)
+(require 'tike-jira-api-comment)
 (require 'tike-jira-api-issue-type)
 (require 'tike-jira-api-issue-link)
 (require 'tike-jira-api-priority)
 (require 'tike-jira-api-project)
 (require 'tike-jira-api-resolution)
+(require 'tike-jira-api-status)
+(require 'tike-jira-api-user)
 (require 'tike-jira-api-version)
+(require 'tike-jira-api-visibility)
 (require 'tike-utils)
 
 (cl-defstruct (tike-jira--field-agile (:constructor tike-jira-field-agile--create)
@@ -60,7 +65,7 @@
                                         (cdr-assoc 'project                     obj))
     :fix-versions                     (mapcar
                                         'tike-jira-version-create
-                                        (cdr-assoc 'fixVersions                 obj)
+                                        (cdr-assoc 'fixVersions                 obj))
     :aggregate-time-spent             (cdr-assoc 'aggregatetimespent            obj)
     :resolution                       (tike-jira-resolution-create
                                         (cdr-assoc 'resolution                  obj))
@@ -78,26 +83,52 @@
     :issue-links                      (mapcar
                                         'tike-jira-issuelink-create
                                         (cdr-assoc 'issuelinks                  obj))
-    :assignee                         (cdr-assoc 'assignee                      obj)
+    :assignee                         (tike-jira-user-create
+                                        (cdr-assoc 'assignee                    obj))
     :updated                          (cdr-assoc 'updated                       obj)
-    :status                           (cdr-assoc 'status                        obj)
-    :components                       (cdr-assoc 'components                    obj)
+    :status                           (tike-jira-status-create
+                                        (cdr-assoc 'status                      obj))
+    :components                       (mapcar
+                                        'tike-jira-component-create
+                                        (cdr-assoc 'components                  obj))
     :time-original-estimate           (cdr-assoc 'timeoriginalestimate          obj)
     :description                      (cdr-assoc 'description                   obj)
-    :attachment                       (cdr-assoc 'attachment                    obj)
+    :attachment                       (mapcar
+                                        'tike-jira-attachment-create
+                                        (cdr-assoc 'attachment                  obj))
     :aggregate-time-estimate          (cdr-assoc 'aggregatetimeestimate         obj)
     :flagged                          (cdr-assoc 'flagged                       obj)
     :summary                          (cdr-assoc 'summary                       obj)
-    :creator                          (cdr-assoc 'creator                       obj)
+    :creator                          (tike-jira-user-create
+                                        (cdr-assoc 'creator                     obj))
     :subtasks                         (cdr-assoc 'subtasks                      obj)
-    :reporter                         (cdr-assoc 'reporter                      obj)
+    :reporter                         (tike-jira-user-create
+                                        (cdr-assoc 'reporter                    obj))
     :aggregate-progress               (cdr-assoc 'aggregateprogress             obj)
     :environment                      (cdr-assoc 'environment                   obj)
     :due-date                         (cdr-assoc 'duedate                       obj)
-    :closed-sprints                   (cdr-assoc 'closedSprints                 obj)
+    :closed-sprints                   (mapcar
+                                        'tike-jira-sprint-create
+                                        (cdr-assoc 'closedSprints               obj))
     :progress                         (cdr-assoc 'progress                      obj)
-    :comment                          (cdr-assoc 'comment                       obj)
-    :worklog                          (cdr-assoc 'worklog                       obj)
+    :comment                          (let ((c (cdr-assoc 'comment              obj)))
+                                        (tike-jira-page--create
+                                          :max-results (cdr-assoc 'maxResults c)
+                                          :total       (cdr-assoc 'total      c)
+                                          :start-at    (cdr-assoc 'startAt    c)
+                                          :is-last     (cdr-assoc 'isLast     c)
+                                          :values      (mapcar
+                                                         'tike-jira-comment-create
+                                                         (cdr-assoc 'comments   c))))
+    :worklog                          (let ((w (cdr-assoc 'worklog              obj)))
+                                        (tike-jira-page--create
+                                          :max-results (cdr-assoc 'maxResults w)
+                                          :total       (cdr-assoc 'total      w)
+                                          :start-at    (cdr-assoc 'startAt    w)
+                                          :is-last     (cdr-assoc 'isLast     w)
+                                          :values      (mapcar
+                                                         'tike-jira-worklog-create
+                                                         (cdr-assoc 'worklogs   w))))
     :custom-fields                    (cl-remove-if-not
                                         (lambda (pair)
                                           (string-prefix-p "customfield_" (symbol-name (car pair))))
