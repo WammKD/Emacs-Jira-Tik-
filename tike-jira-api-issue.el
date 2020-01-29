@@ -26,6 +26,7 @@
 ;; 
 
 ;;; Code:
+(require 'tike-jira-api-field-agile)
 (require 'tike-utils)
 
 (cl-defstruct (tike-jira--issue (:constructor tike-jira-issue--create)
@@ -42,7 +43,8 @@
     :self                     (cdr-assoc 'self                     obj)
     :key                      (cdr-assoc 'key                      obj)
     :expand                   (cdr-assoc 'expand                   obj)
-    :fields                   (cdr-assoc 'fields                   obj)
+    :fields                   (tike-jira-field-agile-create
+                                (cdr-assoc 'fields                 obj))
     :renderedFields           (cdr-assoc 'renderedFields           obj)
     :properties               (cdr-assoc 'properties               obj)
     :names                    (cdr-assoc 'names                    obj)
