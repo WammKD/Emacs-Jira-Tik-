@@ -26,9 +26,14 @@
 ;; 
 
 ;;; Code:
+(require 'cl)
 (require 'tike-jira-api-avatar-urls)
 (require 'tike-jira-api-group)
 (require 'tike-utils)
+
+(cl-deftype tike-jira--assignee-type ()
+  '(member PROJECT_DEFAULT "PROJECT_DEFAULT" COMPONENT_LEAD "COMPONENT_LEAD"
+           PROJECT_LEAD    "PROJECT_LEAD"    UNASSIGNED     "UNASSIGNED"))
 
 (cl-defstruct (tike-jira--user (:constructor tike-jira-user--create)
                                (:conc-name   tike-jira-user--get-))
