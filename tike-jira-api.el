@@ -28,9 +28,13 @@
 ;;; Code:
 (require 'cl)
 (require 'json)
+(require 'tike-jira-api-epic)
+(require 'tike-jira-api-filter)
 (require 'tike-jira-api-issue)
 (require 'tike-jira-api-page)
 (require 'tike-jira-api-rapidboard)
+(require 'tike-jira-api-sprint)
+(require 'tike-jira-api-version)
 (require 'tike-utils)
 (require 'url)
 
@@ -1263,17 +1267,26 @@ using the `url.el' package."
 (defun tike-jira-api--rapidboards--epics-get (account id &optional startAt maxResults
                                                                    done    callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/epic")
-    (append
-      (if done `((done . ,done)) '())
-      `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/epic")
+      (append
+        (if done `((done . ,done)) '())
+        `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-epic-create
+                                             (cdr-assoc 'values   obj))))))
 
 (defun tike-jira-api--rapidboards--epics--issues-get (account
                                                       boardID
@@ -1281,38 +1294,56 @@ using the `url.el' package."
                                                                         jql     validateQuery
                                                                         fields  expand        callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)                      "/rest/agile/1.0/board/"
-            (if (numberp boardID) (number-to-string boardID) boardID) "/epic/"
-            (if (numberp  epicID) (number-to-string  epicID)  epicID) "/issue")
-    (append
-      (if jql    `((jql    . ,jql))    '())
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '())
-      `((validateQuery . ,(if validateQuery validateQuery "true"))
-        (maxResults    . ,(or maxResults 20))
-        (startAt       . ,(or startAt     0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)                      "/rest/agile/1.0/board/"
+              (if (numberp boardID) (number-to-string boardID) boardID) "/epic/"
+              (if (numberp  epicID) (number-to-string  epicID)  epicID) "/issue")
+      (append
+        (if jql    `((jql    . ,jql))    '())
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '())
+        `((validateQuery . ,(if validateQuery validateQuery "true"))
+          (maxResults    . ,(or maxResults 20))
+          (startAt       . ,(or startAt     0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-issue-create
+                                             (cdr-assoc 'issues   obj))))))
 
   ; (Rapid)Board Sprints
 (defun tike-jira-api--rapidboards--sprints-all (account id &optional startAt maxResults
                                                                      state   callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/sprint")
-    (append
-      (if state `((state . ,state)) '())
-      `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/sprint")
+      (append
+        (if state `((state . ,state)) '())
+        `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-sprint-create
+                                             (cdr-assoc 'values   obj))))))
 
 (defun tike-jira-api--rapidboards--sprints--issues-get (account
                                                          boardID
@@ -1320,74 +1351,94 @@ using the `url.el' package."
                                                                            jql     validateQuery
                                                                            fields  expand        callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)                         "/rest/agile/1.0/board/"
-            (if (numberp  boardID) (number-to-string  boardID)  boardID) "/sprint/"
-            (if (numberp sprintID) (number-to-string sprintID) sprintID) "/issue")
-    (append
-      (if jql    `((jql    . ,jql))    '())
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '())
-      `((validateQuery . ,(if validateQuery validateQuery "true"))
-        (maxResults    . ,(or maxResults 20))
-        (startAt       . ,(or startAt     0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)                         "/rest/agile/1.0/board/"
+              (if (numberp  boardID) (number-to-string  boardID)  boardID) "/sprint/"
+              (if (numberp sprintID) (number-to-string sprintID) sprintID) "/issue")
+      (append
+        (if jql    `((jql    . ,jql))    '())
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '())
+        `((validateQuery . ,(if validateQuery validateQuery "true"))
+          (maxResults    . ,(or maxResults 20))
+          (startAt       . ,(or startAt     0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-issue-create
+                                             (cdr-assoc 'issues   obj))))))
 
   ; (Rapid)Board Versions
 (defun tike-jira-api--rapidboards--versions-all (account id &optional startAt  maxResults
                                                                       released callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
-            (if (numberp id) (number-to-string id) id) "/version")
-    (append
-      (if released `((released . ,released)) '())
-      `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/board/"
+              (if (numberp id) (number-to-string id) id) "/version")
+      (append
+        (if released `((released . ,released)) '())
+        `((maxResults . ,(or maxResults 20)) (startAt . ,(or startAt 0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-version-create
+                                             (cdr-assoc 'values   obj))))))
 
 
 
 ;; Epics
 (defun tike-jira-api--epics-get (account id &optional callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat
-      (tike-jira-account--get-uri account)
-      "/rest/agile/1.0/epic/"
-      (if (numberp id) (number-to-string id) id))
-    '()
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-epic-create
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat
+        (tike-jira-account--get-uri account)
+        "/rest/agile/1.0/epic/"
+        (if (numberp id) (number-to-string id) id))
+      '()
+      '()
+      '()
+      'json
+      callback)))
 
 
 
 ;; Issues
 (defun tike-jira-api--issues-get (account idOrKey &optional fields expand callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat
-      (tike-jira-account--get-uri account)
-      "/rest/agile/1.0/issue/"
-      (if (numberp idOrKey) (number-to-string idOrKey) idOrKey))
-    (append
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '()))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-issue-create
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat
+        (tike-jira-account--get-uri account)
+        "/rest/agile/1.0/issue/"
+        (if (numberp idOrKey) (number-to-string idOrKey) idOrKey))
+      (append
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '()))
+      '()
+      '()
+      'json
+      callback)))
 
 (defun tike-jira-api--issues-rank (account rankObject &optional callback)
   ""
@@ -1428,17 +1479,18 @@ using the `url.el' package."
 
 (defun tike-jira-api--sprints-get (account id &optional callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat
-      (tike-jira-account--get-uri account)
-      "/rest/agile/1.0/sprint/"
-      (if (numberp id) (number-to-string id) id))
-    '()
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-sprint-create
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat
+        (tike-jira-account--get-uri account)
+        "/rest/agile/1.0/sprint/"
+        (if (numberp id) (number-to-string id) id))
+      '()
+      '()
+      '()
+      'json
+      callback)))
 
 (defun tike-jira-api--sprints-update (account sprintID &optional sprintState
                                                                  sprintName
@@ -1506,21 +1558,30 @@ using the `url.el' package."
                                                                 jql     validateQuery
                                                                 fields  expand        callback)
   ""
-  (tike-jira-api---request
-    tike-jira-api--REQUEST_GET
-    (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/sprint/"
-            (if (numberp id) (number-to-string id) id) "/issue")
-    (append
-      (if jql    `((jql    . ,jql))    '())
-      (if fields `((fields . ,fields)) '())
-      (if expand `((expand . ,expand)) '())
-      `((validateQuery . ,(if validateQuery validateQuery "true"))
-        (maxResults    . ,(or maxResults 20))
-        (startAt       . ,(or startAt     0))))
-    '()
-    '()
-    'json
-    callback))
+  (tike-jira-error-check
+    (tike-jira-api---request
+      tike-jira-api--REQUEST_GET
+      (concat (tike-jira-account--get-uri account)       "/rest/agile/1.0/sprint/"
+              (if (numberp id) (number-to-string id) id) "/issue")
+      (append
+        (if jql    `((jql    . ,jql))    '())
+        (if fields `((fields . ,fields)) '())
+        (if expand `((expand . ,expand)) '())
+        `((validateQuery . ,(if validateQuery validateQuery "true"))
+          (maxResults    . ,(or maxResults 20))
+          (startAt       . ,(or startAt     0))))
+      '()
+      '()
+      'json
+      callback)
+    (lambda (obj)
+      (tike-jira-page--create :expand      (cdr-assoc 'expand     obj)
+                              :start-at    (cdr-assoc 'startAt    obj)
+                              :max-results (cdr-assoc 'maxResults obj)
+                              :total       (cdr-assoc 'total      obj)
+                              :values      (mapcar
+                                             'tike-jira-issue-create
+                                             (cdr-assoc 'issues   obj))))))
 
 (defun tike-jira-api--sprints--issues-move (account id issues &optional callback)
   ""
