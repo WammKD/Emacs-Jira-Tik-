@@ -31,11 +31,14 @@
 
 (cl-defstruct (tike-jira--version (:constructor tike-jira-version--create)
                                   (:conc-name   tike-jira-version--get-))
-  (expand                 nil) (self       nil) (id              nil)
-  (description            nil) (name       nil) (archived        nil)
-  (released               nil) (overdue    nil) (user-start-date nil)
-  (user-release-date      nil) (project    nil) (project-id      nil)
-  (move-unfixed-issues-to nil) (operations nil) (remote-links    nil))
+  (expand            nil) (self                   nil)
+  (id                nil) (description            nil)
+  (name              nil) (archived               nil)
+  (released          nil) (release-date           nil)
+  (overdue           nil) (user-start-date        nil)
+  (user-release-date nil) (project                nil)
+  (project-id        nil) (move-unfixed-issues-to nil)
+  (operations        nil) (remote-links           nil))
 
 (tike-jira-object-create version
   (tike-jira-version--create :expand                 (cdr-assoc 'expand              obj)
@@ -45,6 +48,7 @@
                              :name                   (cdr-assoc 'name                obj)
                              :archived               (cdr-assoc 'archived            obj)
                              :released               (cdr-assoc 'released            obj)
+                             :release-date           (cdr-assoc 'releaseDate         obj)
                              :overdue                (cdr-assoc 'overdue             obj)
                              :user-start-date        (cdr-assoc 'userStartDate       obj)
                              :user-release-date      (cdr-assoc 'userReleaseDate     obj)
